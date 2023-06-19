@@ -23,7 +23,7 @@ steps:
   inputs:
     runBuildTranslate: true
     applicationType: 'other'
-    fortifyBuildId: 'DigitalLending_BE_MS01'
+    fortifyBuildId: 'RDN'
     runFortifyRulepackUpdate: false
     runFortifyClean: true
     scaVerbose: false
@@ -32,5 +32,5 @@ steps:
     fortifyScanType: 'ScanCentralScan'
     scanCentralFortifyServerName: 'Fortify SSC Connection'
     scanCentralRunFortifyUpload: true
-    scanCentralFortifyApplicationName: 'DigitalLending_BE_MS01'
+    scanCentralFortifyApplicationName: 'RDN'
     scanCentralFortifyApplicationVersion: '1.0'
