@@ -30,4 +30,4 @@ steps:
     scanCentralFortifyServerName: 'Fortify SSC Connection'
     scanCentralRunFortifyUpload: true
     scanCentralFortifyApplicationName: 'DigitalLending_BE_MS01'
-    scanCentralFortifyApplicationVersion: '1.2'
+    scanCentralFortifyApplicationVersion: '1.0'
