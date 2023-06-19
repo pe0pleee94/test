@@ -8,8 +8,8 @@ pool:
   demands: agent.name -equals DEVAPPFORTIFY02
 
 steps:
-- script: echo Starting Fortify Code Scanning ...
-  displayName: 'Starting Fortify Code Scanning'
+- script: echo Hello, world!
+  displayName: 'Run a one-line script'
 
 - script: |
     echo Add other tasks to build, test, and deploy your project.
