@@ -1,7 +1,4 @@
 # Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
 
 trigger:
 - main
@@ -33,4 +30,4 @@ steps:
     scanCentralFortifyServerName: 'Fortify SSC Connection'
     scanCentralRunFortifyUpload: true
     scanCentralFortifyApplicationName: 'DigitalLending_BE_MS01'
-    scanCentralFortifyApplicationVersion: '1.0'
+    scanCentralFortifyApplicationVersion: '1.2'
