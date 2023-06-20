@@ -1,0 +1,74 @@
+spring:
+  profiles:
+    active:
+      - dev
+---
+server:
+  port: 8080
+  ssl:
+    enabled: false
+
+spring:
+  config:
+    activate:
+      on-profile:
+        - dev
+
+  datasource:
+    driver-class-name:
+    url:
+    username:
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+
+---
+server:
+  port: 8082
+  ssl:
+    enabled: false
+
+spring:
+  config:
+    activate:
+      on-profile:
+        - uat
+
+  datasource:
+    driver-class-name:
+    url:
+    username:
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+---
+server:
+  port: 8082
+  ssl:
+    enabled: false
+
+spring:
+  config:
+    activate:
+      on-profile:
+        - prod
+
+  datasource:
+    driver-class-name:
+    url:
+    username:
+    password:
+
+  jpa:
+    generate-ddl: true
+    hibernate:
+      ddl-auto: update
+    show-sql: true
