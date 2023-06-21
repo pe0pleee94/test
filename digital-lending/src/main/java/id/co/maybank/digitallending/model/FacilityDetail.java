@@ -43,7 +43,6 @@ public class FacilityDetail extends BaseModel implements Serializable {
 	@GeneratedValue
 	private Long facilityId;
 
-	@Column(length = 16)
 	/**
 	 * This fetch type choose LAZY because not all record that will get from @{@link IndividualIdentity}
 	 */

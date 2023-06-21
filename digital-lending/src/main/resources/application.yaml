@@ -15,17 +15,19 @@ spring:
         - dev
 
   datasource:
-    driver-class-name:
-    url:
-    username:
-    password:
+    driver-class-name: oracle.jdbc.OracleDriver
+    url: jdbc:oracle:thin:@10.230.85.51:1771:digilend
+    username: digilend_app
+    password: Digilend#123
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     show-sql: true
 
-
+#Liquibase properties#
+  liquibase:
+    change-log: classpath:db/changelog/changelog-master.yaml
 ---
 server:
   port: 8082

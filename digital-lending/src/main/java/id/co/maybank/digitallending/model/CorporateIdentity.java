@@ -48,7 +48,6 @@ public class CorporateIdentity extends BaseModel implements Serializable {
 	@Column(length = 13)
 	private Long phoneNumber;
 
-	@Column(length = 16)
 	/**
 	 * This fetch type choose LAZY because not all record that will get from @{@link IndividualIdentity}
 	 */
