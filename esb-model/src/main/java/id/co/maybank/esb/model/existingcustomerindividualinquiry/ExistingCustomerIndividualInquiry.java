@@ -8,7 +8,7 @@
  *
  * This is class represents POJO class for request and response to ESB Services.
  * It is an ordinary Java object. POJOs are used for increasing the readability and re-usability of a program
- * Using POJOs can modify string type,because this class has characteristic mutable.
+ * Using POJOs can modify string type,because this class has characteristic modifier.
  * This is why using POJOs not Record class (JAVA 14)
  *
  */
@@ -33,12 +33,12 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder({ "ChannelHeader", "ExistingCustomerIndividualRequest" })
+@JsonPropertyOrder({"ChannelHeader", "ExistingCustomerIndividualRequest"})
 public class ExistingCustomerIndividualInquiry {
 
-	@JsonProperty("ChannelHeader")
-	private ChannelHeader channelHeader;
+    @JsonProperty("ChannelHeader")
+    private ChannelHeader channelHeader;
 
-	@JsonProperty("ExistingCustomerIndividualRequest")
-	private ExistingCustomerIndividualRequest existingCustomerIndividualRequest;
+    @JsonProperty("ExistingCustomerIndividualRequest")
+    private ExistingCustomerIndividualRequest existingCustomerIndividualRequest;
 }
