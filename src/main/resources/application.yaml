@@ -1,0 +1,84 @@
+spring:
+  profiles:
+    active:
+      - dev
+---
+
+server:
+  port: 8080
+  ssl:
+    enabled: false
+
+spring:
+  config:
+    activate:
+      on-profile:
+        - dev
+
+  datasource:
+    driver-class-name: oracle.jdbc.OracleDriver
+    url: jdbc:oracle:thin:@10.230.85.51:1771:digilend
+    username: digilend_app
+    password: Digilend#123
+
+  jpa:
+    generate-ddl: true
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+  #Liquibase properties#
+  liquibase:
+    change-log: classpath:db/changelog/changelog-master.yaml
+
+  #ESB Properties
+esb:
+  uri: http://10.235.66.96:7809
+---
+
+server:
+  port: 8081
+  ssl:
+    enabled: false
+
+spring:
+  config:
+    activate:
+      on-profile:
+        - uat
+
+  datasource:
+    driver-class-name:
+    url:
+    username:
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+---
+
+server:
+  port: 8082
+  ssl:
+    enabled: false
+
+spring:
+  config:
+    activate:
+      on-profile:
+        - prod
+
+  datasource:
+    driver-class-name:
+    url:
+    username:
+    password:
+
+  jpa:
+    generate-ddl: true
+    hibernate:
+      ddl-auto: update
+    show-sql: true
