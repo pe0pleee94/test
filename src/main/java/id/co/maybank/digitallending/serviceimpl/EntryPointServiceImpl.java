@@ -65,14 +65,14 @@ public class EntryPointServiceImpl implements EntryPointService {
         //Construct Channel Header for ESB Service
         var channelHeader =
                 ChannelHeader.builder()
-                        .messageId(Util.uniqueRandom(CHANNEL_ID))
+                        .messageId(Util.uniqueId(CHANNEL_ID))
                         .channelID(CHANNEL_ID)
                         .clientSupervisorID(CLIENT_SUPERVISOR_ID)
                         .clientUserID(CLIENT_USER_ID)
                         .reference("")
                         .sequenceNo("")
-                        .transactionDate(LocalDate.parse(LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yy"))))
-                        .transactionTime(LocalDate.from(LocalDateTime.parse(LocalDateTime.now().format(DateTimeFormatter.ofPattern("hh:mm:ss")))))
+                        .transactionDate("")
+                        .transactionTime("")
                         .build();
 
         //Construct ExistingIndividualRequest for ESB Service

@@ -1,5 +1,7 @@
 package id.co.maybank.digitallending;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import id.co.maybank.digitallending.request.dto.EntryPointRequestDTO;
 import id.co.maybank.digitallending.util.Util;
 import id.co.maybank.esb.model.channelheader.ChannelHeader;
@@ -22,11 +24,12 @@ public class Testing {
 
     private void check () {
 
-        var entryPoint = new EntryPointRequestDTO("abc", "123324242", "04-03-2022");
+        var entryPoint = new EntryPointRequestDTO("abc", "123324242", "2022-04-01");
         //Construct Channel Header for ESB Service
 
         String dateFormat = "dd-MM-yy";
         String timeFormat = "hh:mm:ss";
+        String dobFormat = "yyyy-MM-dd";
 
         var transactionDateTime = LocalDateTime.now();
         var dateFormatter = DateTimeFormatter.ofPattern(dateFormat);
@@ -34,10 +37,9 @@ public class Testing {
 
         String dateToString = dateFormatter.format(transactionDateTime);
         String timeToString = timeFormatter.format(transactionDateTime);
-
         var channelHeader =
                 ChannelHeader.builder()
-                        .messageId(Util.uniqueRandom("a"))
+                        .messageId(Util.uniqueId("a"))
                         .channelID("b")
                         .clientSupervisorID("c")
                         .clientUserID("d")
@@ -62,7 +64,10 @@ public class Testing {
                         .existingCustomerIndividualRequest(existingCustomerIndividualRequest)
                         .build();
 
+        var toGson = new GsonBuilder().create();
+            String objectToJson = toGson.toJson(existingIndividualInquiry);
 
-        System.out.println(existingIndividualInquiry);
+
+        System.out.println(objectToJson);
     }
 }
