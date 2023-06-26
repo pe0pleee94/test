@@ -3,11 +3,11 @@ package id.co.maybank.digitallending.request.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 
+import java.time.LocalDate;
 
 @Builder
 public record EntryPointRequestDTO(@JsonProperty("nik") String Nik, @JsonProperty("name") String name,
-                                   @JsonProperty("dob")
-                                   String dob) {
+                                   @JsonProperty("dob") LocalDate dob) {
 
     /**
      * @author muhammadmufqi - Digital Non Retail Division - IT Digital Delivery & Operation, PT Bank Maybank Indonesia Tbk

@@ -3,6 +3,7 @@ package id.co.maybank.digitallending.util;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -34,6 +35,18 @@ public class Util {
 		uniqueId.append(datePattern);
 
 		return uniqueId.toString();
+	}
+
+	/**
+	 * This util for using convert Date to pattern from the parameter
+	 *
+	 * @param localDate
+	 * @param pattern
+	 * @return String DateTimeResult
+	 */
+	public static String dateToString(LocalDate localDate, String pattern) {
+		var dateFormat = DateTimeFormatter.ofPattern(pattern);
+		return localDate.format(dateFormat);
 	}
 
 	/**
