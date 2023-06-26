@@ -67,7 +67,7 @@ public class Util {
 	 * @param httpHeaders
 	 * @return Header : Accept : Application/JSON
 	 */
-	public HttpHeaders httpHeaders(HttpHeaders httpHeaders) {
+	public static HttpHeaders httpHeaders(HttpHeaders httpHeaders) {
 		httpHeaders.add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
 		return httpHeaders;
 	}
