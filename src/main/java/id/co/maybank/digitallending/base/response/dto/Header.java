@@ -2,9 +2,7 @@ package id.co.maybank.digitallending.base.response.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.http.HttpStatusCode;
-import org.springframework.stereotype.Component;
 
-@Component
 public record Header(@JsonProperty("trxLog") String trxLog, @JsonProperty("processingTime") long processingTime,                     @JsonProperty("responseCode")
                      HttpStatusCode httpStatusCode, @JsonProperty("responseMessage") String responseMessage) {
     /**

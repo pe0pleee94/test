@@ -24,7 +24,7 @@ spring:
   jpa:
     generate-ddl: true
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     show-sql: true
 
   #Liquibase properties#
@@ -33,7 +33,10 @@ spring:
 
   #ESB Properties
 esb:
-  uri: http://10.235.66.96:7809
+  existing-customer-individual-endpoint :
+    uri: http://10.235.66.96:7809/ntbservicesapi/v1/ExistingCustomerIndividualInquiry
+  customer-information-endpoint :
+    uri: http://10.235.66.96:7800/accountservicesapi/v1/AccountServices
 ---
 
 server:

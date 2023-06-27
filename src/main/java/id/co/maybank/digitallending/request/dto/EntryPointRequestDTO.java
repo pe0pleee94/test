@@ -7,11 +7,11 @@ import java.time.LocalDate;
 
 @Builder
 public record EntryPointRequestDTO(@JsonProperty("nik") String Nik, @JsonProperty("name") String name,
-                                   @JsonProperty("dob") LocalDate dob) {
+		@JsonProperty("dob") LocalDate dob) {
 
-    /**
-     * @author muhammadmufqi - Digital Non Retail Division - IT Digital Delivery & Operation, PT Bank Maybank Indonesia Tbk
-     * @version 1.0
-     * @since 1.0 (Created June. 13, 2023)
-     */
+	/**
+	 * @author muhammadmufqi - Digital Non Retail Division - IT Digital Delivery & Operation, PT Bank Maybank Indonesia Tbk
+	 * @version 1.0
+	 * @since 1.0 (Created June. 13, 2023)
+	 */
 }

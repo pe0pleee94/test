@@ -9,8 +9,8 @@ import java.io.Serial;
 import java.io.Serializable;
 
 /**
- * Let's create entity class for generate table to schema database with the name (table : corporate_identity) and we
- * use snake case for naming format
+ * Let's create entity class for generate table to schema database with the name (table : corporate_identity) and we use
+ * snake case for naming format
  */
 
 @Data

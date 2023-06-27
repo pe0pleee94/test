@@ -6,6 +6,7 @@ import org.springframework.http.MediaType;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Random;
 
 /**
  * @author muhammadmufqi - Digital Non Retail Division
@@ -14,9 +15,15 @@ import java.time.format.DateTimeFormatter;
  */
 public class Util {
 
-	public static final String LOG_DATE_FORMAT = "yyyyMMddHHmmssSSS";
+	private static final String LOG_DATE_FORMAT = "yyyyMMddHHmmssSSS";
 
-	public static final String HYVHEN_SEPARATOR = "-";
+	private static final String HYVHEN_SEPARATOR = "-";
+
+	private static final Integer RANDOM_NUMBER_BOUND = 999999;
+
+	private Util() {
+		throw new IllegalStateException("Utility class");
+	}
 
 	/**
 	 * This method generate unique id log identifier
@@ -61,6 +68,12 @@ public class Util {
 		return localDateTime.format(dateFormat);
 	}
 
+	public static int generateRandom(){
+		var randomNumber = new Random(RANDOM_NUMBER_BOUND);
+		return randomNumber.nextInt();
+
+	}
+
 	/**
 	 * This method for use setup header request type application JSON
 	 *
@@ -68,7 +81,7 @@ public class Util {
 	 * @return Header : Accept : Application/JSON
 	 */
 	public static HttpHeaders httpHeaders(HttpHeaders httpHeaders) {
-		httpHeaders.add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+		httpHeaders.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
 		return httpHeaders;
 	}
 }
