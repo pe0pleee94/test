@@ -67,6 +67,8 @@ public class EntryPointServiceImpl implements EntryPointService {
 			var responseCustomerInformationResponse = restTemplate.postForObject(existingAccountServicesEsbUri,
 					httpCustomerInformation, CustomerInformationResponseWrapper.class);
 
+
+
 		}
 		return null;
 	}
