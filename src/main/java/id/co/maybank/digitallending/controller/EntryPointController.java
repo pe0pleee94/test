@@ -3,6 +3,7 @@ package id.co.maybank.digitallending.controller;
 import id.co.maybank.digitallending.base.response.dto.Response;
 import id.co.maybank.digitallending.request.dto.EntryPointRequestDTO;
 import id.co.maybank.digitallending.service.EntryPointService;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,6 +23,6 @@ public class EntryPointController {
 	@PostMapping("/check")
 	public ResponseEntity<Response> check(@RequestBody EntryPointRequestDTO entryPointRequestDTO) {
 		Response response = entryPointService.checkExistingCustomer(entryPointRequestDTO);
-		return null;
+		return new ResponseEntity<Response>(Response.builder().build(), HttpStatusCode.valueOf(200));
 	}
 }

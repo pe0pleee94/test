@@ -83,9 +83,16 @@ public class EsbIntegration {
 		return toGson.toJson(requestExistingInd);
 	}
 
-	public String customerInformation(String gcifNo) {
+	public String customerInformation(String no,String type) {
 
-		var customerInformationRequest = CustomerInformationRequest.builder().gcifNo(gcifNo).build();
+		CustomerInformationRequest customerInformationRequest;
+		if(type.equalsIgnoreCase("gcifNo")) {
+			customerInformationRequest = CustomerInformationRequest.builder().GCIFNo(no).build();
+		}
+		else {
+			customerInformationRequest = CustomerInformationRequest.builder().CIFNo(no).build();
+
+		}
 
 		var customerInformation = CustomerInformation.builder().ChannelHeader(getChannelHeader())
 				.CustomerInformationRequest(customerInformationRequest).build();

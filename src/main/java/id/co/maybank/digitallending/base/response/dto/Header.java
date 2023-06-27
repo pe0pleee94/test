@@ -1,8 +1,10 @@
 package id.co.maybank.digitallending.base.response.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Builder;
 import org.springframework.http.HttpStatusCode;
 
+@Builder
 public record Header(@JsonProperty("trxLog") String trxLog, @JsonProperty("processingTime") long processingTime,                     @JsonProperty("responseCode")
                      HttpStatusCode httpStatusCode, @JsonProperty("responseMessage") String responseMessage) {
     /**
