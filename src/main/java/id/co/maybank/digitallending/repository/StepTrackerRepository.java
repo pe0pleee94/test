@@ -1,6 +1,9 @@
 package id.co.maybank.digitallending.repository;
 
 import id.co.maybank.digitallending.model.StepTracker;
+
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -11,5 +14,9 @@ public interface StepTrackerRepository extends JpaRepository<StepTracker, Intege
 	 * @author muhammadmufqi - Digital Non Retail Division - IT Digital Delivery & Operation, PT Bank Maybank Indonesia Tbk
 	 * @version 1.0
 	 * @since 1.0 (Created June. 20, 2023)
+	 * 
+	 * 
 	 */
+	
+	List<StepTracker> findByLinkedId (String linkedId);		//dian status tracker linkById
 }
