@@ -5,12 +5,22 @@ import id.co.maybank.digitallending.base.response.dto.Data;
 import id.co.maybank.digitallending.base.response.dto.Header;
 import id.co.maybank.digitallending.base.response.dto.Response;
 import id.co.maybank.digitallending.esbintegration.EsbIntegration;
+import id.co.maybank.digitallending.esbintegration.service.ExistingCustomerIndividualInquiryService;
+import id.co.maybank.digitallending.esbintegration.service.ExistingRsmeCustomerService;
 import id.co.maybank.digitallending.request.dto.EntryPointRequestDTO;
 import id.co.maybank.digitallending.request.dto.EntryPointResponseDTO;
+import id.co.maybank.digitallending.service.CustomerInformationService;
 import id.co.maybank.digitallending.service.EntryPointService;
 import id.co.maybank.digitallending.util.Util;
+import id.co.maybank.esb.model.customerinformation.CustomerInformationRequest;
+import id.co.maybank.esb.model.customerinformation.CustomerInformationResponse;
 import id.co.maybank.esb.model.customerinformation.CustomerInformationResponseWrapper;
 import id.co.maybank.esb.model.existingcustomerindividual.ExisCustIndInquiryResponseWrapper;
+import id.co.maybank.esb.model.existingcustomerindividual.ExistingCustomerIndividualInquiryResponse;
+import id.co.maybank.esb.model.existingcustomerindividual.ExistingCustomerIndividualRequest;
+import id.co.maybank.esb.model.msg.MsgBodyRequest;
+import id.co.maybank.esb.model.msg.MsgRequest;
+import id.co.maybank.esb.model.msg.MsgResponseWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,11 +44,24 @@ public class EntryPointServiceImpl implements EntryPointService {
 	@Autowired
 	EsbIntegration esbIntegration;
 
-	@Value("${esb.existing-customer-individual-endpoint.uri}")
-	private String existingIndividualEsbUri;
+	@Autowired
+	ExistingRsmeCustomerService existingRsmeCustomerService;
 
-	@Value("${esb.customer-information-endpoint.uri}")
-	private String existingAccountServicesEsbUri;
+	@Autowired
+	CustomerInformationService customerInformationService;
+
+	@Autowired
+	ExistingCustomerIndividualInquiryService existingCustomerIndividualInquiryService;
+	//dateOfBirth format for ESB Request
+	private static final String DATE_OF_BIRTH_ESB_FORMAT = "yyyy-MM-dd";
+
+	public EntryPointServiceImpl(ExistingRsmeCustomerService existingRsmeCustomerService,
+			CustomerInformationService customerInformationService,
+			ExistingCustomerIndividualInquiryService existingCustomerIndividualInquiryService) {
+		this.existingRsmeCustomerService = existingRsmeCustomerService;
+		this.customerInformationService = customerInformationService;
+		this.existingCustomerIndividualInquiryService = existingCustomerIndividualInquiryService;
+	}
 
 	/**
 	 * This method <p>checkExistingCustomer</p> will be checking customer is NTB, ETB or ETB lending to ESB Services
@@ -49,94 +72,29 @@ public class EntryPointServiceImpl implements EntryPointService {
 	@Override
 	public Response checkExistingCustomer(EntryPointRequestDTO entryPointRequestDTO) {
 
-		var requestDateTime = LocalDateTime.now().getSecond();
-		var restTemplate = new RestTemplate();
+		//ExistingCustomerInquiryRequest
+		var exisCustIndInquiryReq = ExistingCustomerIndividualRequest.builder().name(entryPointRequestDTO.name())
+				.identityNo(entryPointRequestDTO.Nik())
+				.dateOfBirth(Util.dateToString(entryPointRequestDTO.dob(), DATE_OF_BIRTH_ESB_FORMAT)).build();
 
-		String isExistCustIndInquiry = esbIntegration.requestExistCustIndInquiry(entryPointRequestDTO);
+		ExisCustIndInquiryResponseWrapper exisCustIndInquiryResponseWrapper = existingCustomerIndividualInquiryService.exisCustIndInquiryResponseWrapper(
+				exisCustIndInquiryReq);
 
-		//Setup HTTPEntity for the RestTemplate Object
-		HttpEntity<String> httpExistingIndividual = new HttpEntity<>(isExistCustIndInquiry, esbIntegration.headers());
+		//Customer Information
+		var customerInformation = CustomerInformationRequest.builder()
+				.GCIFNo(exisCustIndInquiryResponseWrapper.getExistingCustomerIndividualInquiryResponse()
+						.getCustomerData().getGcifNo()).build();
 
-		//First Hit to ESB Service
-		var responseExisCustIndInquiry = restTemplate.postForObject(existingIndividualEsbUri, httpExistingIndividual,
-				ExisCustIndInquiryResponseWrapper.class);
+		CustomerInformationResponseWrapper customerInformationResponseWrapper = customerInformationService.customerInformationResponseWrapper(
+				customerInformation);
 
-		// Check if customer existing (ETB / ETB LENDING)
-		if (responseExisCustIndInquiry != null
-				&& responseExisCustIndInquiry.getExistingCustomerIndividualInquiryResponse().getExistingCustomer()
-				!= null && responseExisCustIndInquiry.getExistingCustomerIndividualInquiryResponse()
-				.getExistingCustomer().equalsIgnoreCase("true")) {
-
-			//Get GCIFNo
-			var gcifNo = responseExisCustIndInquiry.getExistingCustomerIndividualInquiryResponse().getCustomerData()
-					.getGcifNo();
-			//get CIFNo
-			var cifNo = responseExisCustIndInquiry.getExistingCustomerIndividualInquiryResponse().getCustomerData()
-					.getCifNo();
-
-			//set to esb for gcifno
-			var customerInformationGcif = esbIntegration.customerInformation(gcifNo, "gcifNo");
-
-			HttpEntity<String> httpCustomerInformationGcif = new HttpEntity<>(customerInformationGcif,
-					esbIntegration.headers());
-
-			//Third call to Customer Information (Get phone Number & Email)
-			var responseCustomerInformationResponseGcif = restTemplate.postForObject(existingAccountServicesEsbUri,
-					httpCustomerInformationGcif, CustomerInformationResponseWrapper.class);
-
-			//Checking response for gcif data
-			if (responseCustomerInformationResponseGcif != null
-					&& responseCustomerInformationResponseGcif.getCustomerInformationResponse() != null
-					&& responseCustomerInformationResponseGcif.getCustomerInformationResponse().getResponseCode()
-					.equals("00")) {
-
-				//set to esb for cifno
-				var customerInformationCif = esbIntegration.customerInformation(cifNo, "cifNo");
-
-				HttpEntity<String> httpCustomerInformationCif = new HttpEntity<>(customerInformationCif,
-						esbIntegration.headers());
-
-				//Third call to Customer Information (Get marital status)
-				var responseCustomerInformationResponseCif = restTemplate.postForObject(existingAccountServicesEsbUri,
-						httpCustomerInformationCif, CustomerInformationResponseWrapper.class);
-
-				//checking response for cif data
-				if (responseCustomerInformationResponseCif != null
-						&& responseCustomerInformationResponseCif.getCustomerInformationResponse() != null
-						&& responseCustomerInformationResponseCif.getCustomerInformationResponse().getResponseCode()
-						.equals("00")) {
-
-					//Set phoneNumber, email and maritalStatus to the constructEntryPointGcif has already phoneNumber and Email
-					var constructEntryPoint = EntryPointResponseDTO.builder().phoneNumber(
-									responseCustomerInformationResponseGcif.getCustomerInformationResponse()
-											.getCustomerInformationResponseData().getMobileNo())
-							.email(responseCustomerInformationResponseGcif.getCustomerInformationResponse()
-									.getCustomerInformationResponseData().getEmail()).maritalStatus(
-									responseCustomerInformationResponseCif.getCustomerInformationResponse()
-											.getCustomerInformationResponseData().getMarital_status()).build();
-
-					//set trxResponse
-					var responseDateTime = LocalDateTime.now().getSecond();
-
-					//set trxProcessingTime
-					var processingTime = (responseDateTime - requestDateTime) * 1000;
-
-					//final construct response to client
-					var data = Data.builder().object(constructEntryPoint).build();
-					var body = Body.builder().data(data).build();
-					var header = Header.builder().httpStatusCode(HttpStatusCode.valueOf(200))
-							.responseMessage("Success Retrieve Data").trxLog(Util.uniqueId("SME_DL_ESB"))
-							.processingTime(processingTime).build();
-					var response = Response.builder().body(body).header(header).build();
-
-					return response;
-
-				}
-
-			}
-
-		}
+		//Customer RSME
+		var customerRsme = MsgBodyRequest.builder()
+				.GCIF(exisCustIndInquiryResponseWrapper.getExistingCustomerIndividualInquiryResponse().getCustomerData()
+						.getGcifNo()).build();
+		MsgResponseWrapper msgResponseWrapper = existingRsmeCustomerService.msgResponseWrapper(customerRsme);
 
 		return null;
 	}
 }
+

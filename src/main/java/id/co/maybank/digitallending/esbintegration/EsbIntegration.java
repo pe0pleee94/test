@@ -63,7 +63,7 @@ public class EsbIntegration {
 		return Util.httpHeaders(httpHeaders);
 	}
 
-	public String requestExistCustIndInquiry(EntryPointRequestDTO entryPointRequestDTO) {
+	public String existingCustomerIndividualInquiry(EntryPointRequestDTO entryPointRequestDTO) {
 
 		//Construct ExistingIndividualRequest for ESB Service
 		var existingCustomerIndividualRequest = ExistingCustomerIndividualRequest.builder()
@@ -103,5 +103,10 @@ public class EsbIntegration {
 		//Convert to JSON
 		var toGson = new GsonBuilder().create();
 		return toGson.toJson(requestCustomerInformation);
+	}
+
+	public String existingRsmeCustomer(String Gcif) {
+
+		return null;
 	}
 }

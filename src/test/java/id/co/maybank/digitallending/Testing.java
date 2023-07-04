@@ -1,13 +1,12 @@
 package id.co.maybank.digitallending;
 
-
-import com.google.gson.GsonBuilder;
-import id.co.maybank.digitallending.request.dto.EntryPointRequestDTO;
-import id.co.maybank.digitallending.util.Util;
-import id.co.maybank.esb.model.channelheader.ChannelHeader;
-import id.co.maybank.esb.model.existingcustomerindividual.ExistingCustomerIndividualInquiry;
-import id.co.maybank.esb.model.existingcustomerindividual.ExistingCustomerIndividualRequest;
-import id.co.maybank.esb.model.existingcustomerindividual.RequestExisCustIndInquiry;
+//import com.google.gson.GsonBuilder;
+//import id.co.maybank.digitallending.request.dto.EntryPointRequestDTO;
+//import id.co.maybank.digitallending.util.Util;
+//import id.co.maybank.esb.model.channelheader.ChannelHeader;
+//import id.co.maybank.esb.model.existingcustomerindividual.ExistingCustomerIndividualInquiry;
+//import id.co.maybank.esb.model.existingcustomerindividual.ExistingCustomerIndividualRequest;
+//import id.co.maybank.esb.model.existingcustomerindividual.RequestExisCustIndInquiry;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -15,7 +14,17 @@ import java.time.format.DateTimeFormatter;
 
 public class Testing {
 
-//    public static void main (String [] args){
+	public static void main(String[] args) {
+		var requestDateTime = LocalDateTime.of(202,12,12,12,00,10).getSecond();
+		var responseDateTime = LocalDateTime.now().getSecond();
+		var processingTime = (responseDateTime - requestDateTime) * 1000;
+
+		System.out.println(requestDateTime);
+		System.out.println(responseDateTime);
+		System.out.println(processingTime);
+
+
+	}
 //        var testing = new Testing();
 //        System.out.println(testing.check());
 //

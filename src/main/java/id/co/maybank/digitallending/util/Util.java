@@ -1,5 +1,6 @@
 package id.co.maybank.digitallending.util;
 
+import com.google.gson.GsonBuilder;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
@@ -83,5 +84,10 @@ public class Util {
 	public static HttpHeaders httpHeaders(HttpHeaders httpHeaders) {
 		httpHeaders.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
 		return httpHeaders;
+	}
+
+	public static String toStringGson(Object object){
+		var toGson = new GsonBuilder().create();
+		return toGson.toJson(object);
 	}
 }
