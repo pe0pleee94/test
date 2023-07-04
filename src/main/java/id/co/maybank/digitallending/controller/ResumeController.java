@@ -19,7 +19,7 @@ public class ResumeController {
 	@Autowired
 	private ResumeEntryPointService resEntPoServ;
 
-	@PostMapping("/resume/entrypoint")
+	@PostMapping("/entrypoint/resume/")
 	public ResponseEntity<ResumeResponse> resumeEntryPoint(@RequestBody @Valid ResumeRequest request) {
 
 		try {
