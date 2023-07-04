@@ -10,5 +10,5 @@ import id.co.maybank.esb.model.msg.MsgResponseWrapper;
  */
 public interface ExistingRsmeCustomerService {
 
-	MsgResponseWrapper msgResponseWrapper(MsgBodyRequest msgBodyRequest);
+    MsgResponseWrapper msgResponseWrapper(MsgBodyRequest msgBodyRequest);
 }
