@@ -1,6 +1,7 @@
 package id.co.maybank.digitallending.controller;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -8,8 +9,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import id.co.maybank.digitallending.request.dto.ResumeRequest;
-import id.co.maybank.digitallending.request.dto.ResumeResponse;
+import id.co.maybank.digitallending.dto.ResumeRequest;
+import id.co.maybank.digitallending.dto.ResumeResponse;
 import id.co.maybank.digitallending.service.ResumeEntryPointService;
 import id.co.maybank.digitallending.validator.ValidationException;
 

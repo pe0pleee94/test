@@ -27,6 +27,14 @@ spring:
       ddl-auto: none
     show-sql: true
 
+#springdoc:
+#  swagger-ui:
+#    path: /swagger-ui-custom.html
+#  packages-to-scan:
+#    - id.co.maybank.digitallending
+
+
+
   #Liquibase properties#
   liquibase:
     change-log: classpath:db/changelog/changelog-master.yaml
@@ -37,6 +45,10 @@ esb:
     uri: http://10.235.66.96:7809/ntbservicesapi/v1/ExistingCustomerIndividualInquiry
   customer-information-endpoint :
     uri: http://10.235.66.96:7800/accountservicesapi/v1/AccountServices
+  existing-rsme-endpoint :
+    uri: http://10.235.66.95:8800/id/mbi/v1/SME_DL/CheckExstRSMECust
+  connection-timeout: 2000
+
 ---
 
 server:
