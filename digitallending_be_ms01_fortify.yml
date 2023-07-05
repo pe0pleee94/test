@@ -1,0 +1,33 @@
+# Starter pipeline
+
+trigger:
+- main
+
+pool:
+  name: Default
+  demands: agent.name -equals DEVAPPFORTIFY02
+
+steps:
+- script: echo Hello, world!
+  displayName: 'Run a one-line script'
+
+- script: |
+    echo Add other tasks to build, test, and deploy your project.
+    echo See https://aka.ms/yaml
+  displayName: 'Run a multi-line script'
+
+- task: FortifySCA@7
+  inputs:
+    runBuildTranslate: true
+    applicationType: 'other'
+    fortifyBuildId: 'DigitalLending_BE_MS01'
+    runFortifyRulepackUpdate: false
+    runFortifyClean: true
+    scaVerbose: false
+    scaDebug: false
+    runFortifyScan: true
+    fortifyScanType: 'ScanCentralScan'
+    scanCentralFortifyServerName: 'Fortify SSC Connection'
+    scanCentralRunFortifyUpload: true
+    scanCentralFortifyApplicationName: 'DigitalLending_BE_MS01'
+    scanCentralFortifyApplicationVersion: '1.0'
