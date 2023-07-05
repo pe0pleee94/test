@@ -29,9 +29,8 @@ spring:
 
 #springdoc:
 #  swagger-ui:
-#    path: /swagger-ui-custom.html
-#  packages-to-scan:
-#    - id.co.maybank.digitallending
+#    path: /digital-lending-apidocs.html
+
 
 
 

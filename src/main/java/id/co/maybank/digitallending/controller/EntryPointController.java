@@ -25,7 +25,7 @@ public class EntryPointController {
 		this.entryPointService = entryPointService;
 	}
 
-	@PostMapping("/check")
+	@PostMapping()
 	public ResponseEntity<Response> check(@RequestBody @Valid EntryPointRequestDTO entryPointRequestDTO) {
 		Response response = entryPointService.checkExistingCustomer(entryPointRequestDTO);
 		return new ResponseEntity<Response>(response,response.header().httpStatus());

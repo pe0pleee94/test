@@ -80,87 +80,93 @@ public class EntryPointServiceImpl implements EntryPointService {
 			return BaseResponse.response(HttpStatus.OK, "Account already registered", entryPointRequestDTO);
 		}
 
-		//If data not exist hit To ESB
-		ExisCustIndInquiryResponseWrapper exisCustIndInquiryResponseWrapper = getExisCustIndInquiryResponseWrapper(
-				entryPointRequestDTO);
+		try {
+			//If data not exist hit To ESB
+			ExisCustIndInquiryResponseWrapper exisCustIndInquiryResponseWrapper = getExisCustIndInquiryResponseWrapper(
+					entryPointRequestDTO);
 
-		//If account exist then checking ETB / ETB Lending type
-		if (checkIfEtbOrEtbLending(exisCustIndInquiryResponseWrapper)) {
+			//If account exist then checking ETB / ETB Lending type
+			if (checkIfEtbOrEtbLending(exisCustIndInquiryResponseWrapper)) {
 
-			//Hit to ESB CheckExistingRSMECustomer
-			MsgResponseWrapper rsmeMsgResponseWrapper = getRsmeMsgResponseWrapper(exisCustIndInquiryResponseWrapper);
+				//Hit to ESB CheckExistingRSMECustomer
+				MsgResponseWrapper rsmeMsgResponseWrapper = getRsmeMsgResponseWrapper(
+						exisCustIndInquiryResponseWrapper);
 
-			if (checkIfRsmeExists(rsmeMsgResponseWrapper)) {
+				if (checkIfRsmeExists(rsmeMsgResponseWrapper)) {
 
-				//Getting info from Systematic CIF (maritalStatus)
-				var customerInformationResponseCif = getCustomerInformationCif(exisCustIndInquiryResponseWrapper);
+					//Getting info from Systematic CIF (maritalStatus)
+					var customerInformationResponseCif = getCustomerInformationCif(exisCustIndInquiryResponseWrapper);
 
-				if (customerInformationResponseCif != null
-						&& customerInformationResponseCif.getCustomerInformationResponse().getResponseCode()
-						.equals("00")) {
-
-					//Getting info from GCIF (phoneNumber,email)
-					var customerInformationResponseGcif = getCustomerInformationGcif(exisCustIndInquiryResponseWrapper);
-
-					if (customerInformationResponseGcif != null
-							&& customerInformationResponseGcif.getCustomerInformationResponse().getResponseCode()
+					if (customerInformationResponseCif != null
+							&& customerInformationResponseCif.getCustomerInformationResponse().getResponseCode()
 							.equals("00")) {
 
-						saveToDb(entryPointRequestDTO, customerInformationResponseGcif, ETB_LENDING_TYPE);
+						//Getting info from GCIF (phoneNumber,email)
+						var customerInformationResponseGcif = getCustomerInformationGcif(
+								exisCustIndInquiryResponseWrapper);
 
-						var entryPointResponse = getEntryPointResponseDTOEtbLending(rsmeMsgResponseWrapper,
-								customerInformationResponseCif, customerInformationResponseGcif);
+						if (customerInformationResponseGcif != null
+								&& customerInformationResponseGcif.getCustomerInformationResponse().getResponseCode()
+								.equals("00")) {
 
-						return BaseResponse.response(HttpStatus.OK, "Success register for ETB Lending",
-								entryPointResponse);
+							saveToDb(entryPointRequestDTO, customerInformationResponseGcif, ETB_LENDING_TYPE);
+
+							var entryPointResponse = getEntryPointResponseDTOEtbLending(rsmeMsgResponseWrapper,
+									customerInformationResponseCif, customerInformationResponseGcif);
+
+							return BaseResponse.response(HttpStatus.OK, "Success register for ETB Lending",
+									entryPointResponse);
+						}
 					}
+					return BaseResponse.response(HttpStatus.NOT_ACCEPTABLE, "Error", null);
 				}
-				return BaseResponse.response(HttpStatus.NOT_ACCEPTABLE, "Error", null);
-			}
 
-			//For ETB Type
-			//Getting info from GCIF (phoneNumber,email)
-			var customerInformationResponseGCif = getCustomerInformationGcif(exisCustIndInquiryResponseWrapper);
+				//For ETB Type
+				//Getting info from GCIF (phoneNumber,email)
+				var customerInformationResponseGCif = getCustomerInformationGcif(exisCustIndInquiryResponseWrapper);
 
-			if (customerInformationResponseGCif != null
-					&& customerInformationResponseGCif.getCustomerInformationResponse().getResponseCode()
-					.equals("00")) {
-
-				//Getting info from Systematic CIF (maritalStatus)
-				var customerInformationResponseCif = getCustomerInformationCif(exisCustIndInquiryResponseWrapper);
-
-				if (customerInformationResponseCif != null
-						&& customerInformationResponseCif.getCustomerInformationResponse().getResponseCode()
+				if (customerInformationResponseGCif != null
+						&& customerInformationResponseGCif.getCustomerInformationResponse().getResponseCode()
 						.equals("00")) {
 
-					//Save to DB for ETB
-					saveToDb(entryPointRequestDTO, customerInformationResponseGCif, ETB_TYPE);
+					//Getting info from Systematic CIF (maritalStatus)
+					var customerInformationResponseCif = getCustomerInformationCif(exisCustIndInquiryResponseWrapper);
 
-					return BaseResponse.response(HttpStatus.OK, "Register success for ETB type",
-							EntryPointResponseDTO.builder()
-									.email(customerInformationResponseGCif.getCustomerInformationResponse()
-											.getCustomerInformationResponseData().getEmail()).phoneNumber(
-											customerInformationResponseGCif.getCustomerInformationResponse()
-													.getCustomerInformationResponseData().getMobileNo()).maritalStatus(
-											customerInformationResponseCif.getCustomerInformationResponse()
-													.getCustomerInformationResponseData().getMarital_status()).build());
+					if (customerInformationResponseCif != null
+							&& customerInformationResponseCif.getCustomerInformationResponse().getResponseCode()
+							.equals("00")) {
+
+						//Save to DB for ETB
+						saveToDb(entryPointRequestDTO, customerInformationResponseGCif, ETB_TYPE);
+
+						return BaseResponse.response(HttpStatus.OK, "Register success for ETB type",
+								EntryPointResponseDTO.builder()
+										.email(customerInformationResponseGCif.getCustomerInformationResponse()
+												.getCustomerInformationResponseData().getEmail()).phoneNumber(
+												customerInformationResponseGCif.getCustomerInformationResponse()
+														.getCustomerInformationResponseData().getMobileNo()).maritalStatus(
+												customerInformationResponseCif.getCustomerInformationResponse()
+														.getCustomerInformationResponseData().getMarital_status()).build());
+					}
 				}
+
 			}
+		} catch (Exception ex) {
 
+			//Save to DB for NTB
+			var individualIdentity = new IndividualIdentity();
+			individualIdentity.setNik(Long.parseLong(entryPointRequestDTO.Nik()));
+			individualIdentity.setName(entryPointRequestDTO.name());
+			individualIdentity.setDateOfBirth(entryPointRequestDTO.dob());
+			individualIdentity.setCategory(NTB_TYPE);
+			individualIdentity.setCreatedDate(LocalDateTime.now());
+			individualIdentity.setUpdatedDate(LocalDateTime.now());
+
+			individualRepository.save(individualIdentity);
+			//Give the response for NTB
+			return BaseResponse.response(HttpStatus.OK, "Register success for NTB type", entryPointRequestDTO);
 		}
-
-		//Save to DB for NTB
-		var individualIdentity = new IndividualIdentity();
-		individualIdentity.setNik(Long.parseLong(entryPointRequestDTO.Nik()));
-		individualIdentity.setName(entryPointRequestDTO.name());
-		individualIdentity.setDateOfBirth(entryPointRequestDTO.dob());
-		individualIdentity.setCategory(NTB_TYPE);
-		individualIdentity.setCreatedDate(LocalDateTime.now());
-		individualIdentity.setUpdatedDate(LocalDateTime.now());
-
-		individualRepository.save(individualIdentity);
-		//Give the response for NTB
-		return BaseResponse.response(HttpStatus.OK, "Register success for NTB type", entryPointRequestDTO);
+		return null;
 	}
 
 	private void saveToDb(EntryPointRequestDTO entryPointRequestDTO,
