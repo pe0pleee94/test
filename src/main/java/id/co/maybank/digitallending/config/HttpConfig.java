@@ -1,6 +1,8 @@
 package id.co.maybank.digitallending.config;
 
 import id.co.maybank.digitallending.util.Util;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 
@@ -9,6 +11,7 @@ import org.springframework.http.HttpHeaders;
  * @version 1.0
  * @since 1.0 (Created June. 22, 2023)
  */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class HttpConfig {
 
 	/**

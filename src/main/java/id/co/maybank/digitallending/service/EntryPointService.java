@@ -1,7 +1,7 @@
 package id.co.maybank.digitallending.service;
 
 import id.co.maybank.digitallending.base.response.dto.Response;
-import id.co.maybank.digitallending.request.dto.EntryPointRequestDTO;
+import id.co.maybank.digitallending.dto.EntryPointRequestDTO;
 
 /**
  * @author muhammadmufqi - Digital Non Retail Division

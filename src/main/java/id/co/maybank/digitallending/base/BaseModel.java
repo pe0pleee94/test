@@ -7,6 +7,7 @@ import javax.validation.constraints.NotNull;
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  * To retrieve the inherited field in the form of a base model (not business field) that will be used to produce to the
@@ -38,9 +39,9 @@ public class BaseModel implements Serializable {
 	 */
 
 	@NotNull
-	private LocalDate createdDate;
+	private LocalDateTime createdDate;
 
 	@NotNull
-	private LocalDate updatedDate;
+	private LocalDateTime updatedDate;
 
 }

@@ -2,7 +2,7 @@ package id.co.maybank.digitallending.base.response.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
-import org.springframework.http.HttpStatusCode;
+import org.springframework.http.HttpStatus;
 
 /**
  * @author muhammadmufqi - Digital Non Retail Division - IT Digital Delivery & Operation, PT Bank Maybank Indonesia Tbk
@@ -11,7 +11,6 @@ import org.springframework.http.HttpStatusCode;
  */
 @Builder
 public record Header(@JsonProperty("trxLog") String trxLog, @JsonProperty("processingTime") long processingTime,
-		@JsonProperty("responseCode") HttpStatusCode httpStatusCode,
-		@JsonProperty("responseMessage") String responseMessage) {
+		@JsonProperty("responseCode") HttpStatus httpStatus, @JsonProperty("responseMessage") String responseMessage) {
 
 }

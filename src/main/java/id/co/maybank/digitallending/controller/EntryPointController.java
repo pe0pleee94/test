@@ -1,7 +1,7 @@
 package id.co.maybank.digitallending.controller;
 
 import id.co.maybank.digitallending.base.response.dto.Response;
-import id.co.maybank.digitallending.request.dto.EntryPointRequestDTO;
+import id.co.maybank.digitallending.dto.EntryPointRequestDTO;
 import id.co.maybank.digitallending.service.EntryPointService;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;

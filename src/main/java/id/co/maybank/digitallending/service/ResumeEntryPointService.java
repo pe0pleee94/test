@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import id.co.maybank.digitallending.common.BusinessTypeConst;
 import id.co.maybank.digitallending.model.StepTracker;
 import id.co.maybank.digitallending.repository.StepTrackerRepository;
-import id.co.maybank.digitallending.request.dto.ResumeResponse;
+import id.co.maybank.digitallending.dto.ResumeResponse;
 import id.co.maybank.digitallending.validator.BusinessTypeValidator;
 import id.co.maybank.digitallending.validator.IdCardValidator;
 import id.co.maybank.digitallending.validator.TaxPayerValidator;

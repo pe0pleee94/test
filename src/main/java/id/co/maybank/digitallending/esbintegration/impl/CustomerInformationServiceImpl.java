@@ -37,9 +37,9 @@ public class CustomerInformationServiceImpl implements CustomerInformationServic
 			CustomerInformationRequest customerInformationRequest) {
 
 		if (customerInformationRequest.getCIFNo() != null) {
-			String gcifNo = customerInformationRequest.getGCIFNo();
-		} else {
 			String cifNo = customerInformationRequest.getCIFNo();
+		} else {
+			String gCifNo = customerInformationRequest.getGCIFNo();
 		}
 
 		var constructCustomerInformation = CustomerInformation.builder()

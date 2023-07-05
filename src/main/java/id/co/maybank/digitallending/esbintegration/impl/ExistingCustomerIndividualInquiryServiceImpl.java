@@ -39,7 +39,7 @@ public class ExistingCustomerIndividualInquiryServiceImpl implements ExistingCus
 
 		var constructExistingIndividualInquiry = ExistingCustomerIndividualInquiry.builder()
 				.ChannelHeader(ChannelHeaderEsb.getChannelHeader())
-				.ExistingCustomerIndividualRequest(existingCustomerIndividualRequest).build();
+				.ExistingCustomerIndividualRequest(constructExistingCustomerIndividualRequest).build();
 
 		var requestExistingInd = ExisCustIndInquiryRequestWrapper.builder()
 				.ExistingCustomerIndividualInquiry(constructExistingIndividualInquiry);

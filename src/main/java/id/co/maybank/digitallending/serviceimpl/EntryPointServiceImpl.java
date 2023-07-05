@@ -1,13 +1,12 @@
 package id.co.maybank.digitallending.serviceimpl;
 
-import id.co.maybank.digitallending.base.response.dto.Body;
-import id.co.maybank.digitallending.base.response.dto.Data;
-import id.co.maybank.digitallending.base.response.dto.Header;
-import id.co.maybank.digitallending.base.response.dto.Response;
-import id.co.maybank.digitallending.esbintegration.EsbIntegration;
+import id.co.maybank.digitallending.base.response.dto.*;
+import id.co.maybank.digitallending.dto.EntryPointRequestDTO;
+import id.co.maybank.digitallending.dto.EntryPointResponseDTO;
 import id.co.maybank.digitallending.esbintegration.service.ExistingCustomerIndividualInquiryService;
 import id.co.maybank.digitallending.esbintegration.service.ExistingRsmeCustomerService;
-import id.co.maybank.digitallending.request.dto.EntryPointRequestDTO;
+import id.co.maybank.digitallending.model.IndividualIdentity;
+import id.co.maybank.digitallending.repository.IndividualRepository;
 import id.co.maybank.digitallending.service.CustomerInformationService;
 import id.co.maybank.digitallending.service.EntryPointService;
 import id.co.maybank.digitallending.util.Util;
@@ -19,8 +18,11 @@ import id.co.maybank.esb.model.msg.MsgBodyRequest;
 import id.co.maybank.esb.model.msg.MsgResponseWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatusCode;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.Optional;
 
 /**
  * @author muhammadmufqi - Digital Non Retail Division
@@ -31,106 +33,226 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class EntryPointServiceImpl implements EntryPointService {
 
-    @Autowired
-    EsbIntegration esbIntegration;
+	ExistingRsmeCustomerService existingRsmeCustomerService;
 
-    @Autowired
-    ExistingRsmeCustomerService existingRsmeCustomerService;
+	CustomerInformationService customerInformationService;
 
-    @Autowired
-    CustomerInformationService customerInformationService;
+	ExistingCustomerIndividualInquiryService existingCustomerIndividualInquiryService;
 
-    @Autowired
-    ExistingCustomerIndividualInquiryService existingCustomerIndividualInquiryService;
-    //dateOfBirth format for ESB Request
-    private static final String DATE_OF_BIRTH_ESB_FORMAT = "yyyy-MM-dd";
+	IndividualRepository individualRepository;
 
-    Response response;
+	//dateOfBirth format for ESB Request
+	private static final String DATE_OF_BIRTH_ESB_FORMAT = "yyyy-MM-dd";
 
+	private static final String NTB_TYPE = "NTB";
 
-    public EntryPointServiceImpl(ExistingRsmeCustomerService existingRsmeCustomerService,
-                                 CustomerInformationService customerInformationService,
-                                 ExistingCustomerIndividualInquiryService existingCustomerIndividualInquiryService) {
-        this.existingRsmeCustomerService = existingRsmeCustomerService;
-        this.customerInformationService = customerInformationService;
-        this.existingCustomerIndividualInquiryService = existingCustomerIndividualInquiryService;
-    }
+	private static final String ETB_TYPE = "ETB";
 
-    /**
-     * This method <p>checkExistingCustomer</p> will be checking customer is NTB, ETB or ETB lending to ESB Services
-     *
-     * @param {@link EntryPointRequestDTO} such (NIK, Name and DOB )
-     * @return @{@link Response} such (Company Name, Length Of Business, Business Category, Phone Number and Email)
-     */
-    @Override
-    public Response checkExistingCustomer(EntryPointRequestDTO entryPointRequestDTO) {
+	private static final String ETB_LENDING_TYPE = "ETB_LENDING";
 
+	Response response;
 
-        //ExistingCustomerInquiryRequest
-        var existCustIndInquiryReq = ExistingCustomerIndividualRequest.builder().name(entryPointRequestDTO.name())
-                .identityNo(entryPointRequestDTO.Nik())
-                .dateOfBirth(Util.dateToString(entryPointRequestDTO.dob(), DATE_OF_BIRTH_ESB_FORMAT)).build();
+	//Dependency Inversion Principle
+	public EntryPointServiceImpl(ExistingRsmeCustomerService existingRsmeCustomerService,
+			CustomerInformationService customerInformationService,
+			ExistingCustomerIndividualInquiryService existingCustomerIndividualInquiryService,
+			IndividualRepository individualRepository) {
+		this.existingRsmeCustomerService = existingRsmeCustomerService;
+		this.customerInformationService = customerInformationService;
+		this.existingCustomerIndividualInquiryService = existingCustomerIndividualInquiryService;
+		this.individualRepository = individualRepository;
+	}
 
-        //ExistingCustomerInquiryResponse
-        var exisCustIndInquiryResponseWrapper = this.existingCustomerIndividualInquiryService.exisCustIndInquiryResponseWrapper(
-                existCustIndInquiryReq);
+	/**
+	 * This method <p>checkExistingCustomer</p> will be checking customer is NTB, ETB or ETB lending to ESB Services
+	 *
+	 * @param {@link EntryPointRequestDTO} such (NIK, Name and DOB )
+	 * @return @{@link Response} such (Company Name, Length Of Business, Business Category, Phone Number and Email)
+	 */
+	@Override
+	public Response checkExistingCustomer(EntryPointRequestDTO entryPointRequestDTO) {
 
-        //Checking ETB / ETB Lending
-        if (checkIfEtbOrEtbLending(exisCustIndInquiryResponseWrapper)) {
+		//Checking if user exist
+		Optional<IndividualIdentity> existingUser = individualRepository.findById(
+				Long.parseLong(entryPointRequestDTO.Nik()));
 
-            //Customer RSME
-            var customerRsme = MsgBodyRequest.builder()
-                    .GCIF(exisCustIndInquiryResponseWrapper.getExistingCustomerIndividualInquiryResponse().getCustomerData()
-                            .getGcifNo()).build();
+		if (existingUser.isPresent()) {
+			return BaseResponse.response(HttpStatus.OK, "Account already registered", entryPointRequestDTO);
+		}
 
-            MsgResponseWrapper rsmeMsgResponseWrapper = this.existingRsmeCustomerService.msgResponseWrapper(customerRsme);
+		//If data not exist hit To ESB
+		ExisCustIndInquiryResponseWrapper exisCustIndInquiryResponseWrapper = getExisCustIndInquiryResponseWrapper(
+				entryPointRequestDTO);
 
-            //Customer Information
-            var customerInformation = CustomerInformationRequest.builder()
-                    .GCIFNo(exisCustIndInquiryResponseWrapper.getExistingCustomerIndividualInquiryResponse()
-                            .getCustomerData().getGcifNo()).build();
+		//If account exist then checking ETB / ETB Lending type
+		if (checkIfEtbOrEtbLending(exisCustIndInquiryResponseWrapper)) {
 
+			//Hit to ESB CheckExistingRSMECustomer
+			MsgResponseWrapper rsmeMsgResponseWrapper = getRsmeMsgResponseWrapper(exisCustIndInquiryResponseWrapper);
 
-            CustomerInformationResponseWrapper customerInformationResponseWrapper = this.customerInformationService.customerInformationResponseWrapper(
-                    customerInformation);
+			if (checkIfRsmeExists(rsmeMsgResponseWrapper)) {
 
-            if (checkIfRsmeExists(rsmeMsgResponseWrapper)) {
+				//Getting info from Systematic CIF (maritalStatus)
+				var customerInformationResponseCif = getCustomerInformationCif(exisCustIndInquiryResponseWrapper);
 
+				if (customerInformationResponseCif != null
+						&& customerInformationResponseCif.getCustomerInformationResponse().getResponseCode()
+						.equals("00")) {
 
-                var header = new Header("", 123, HttpStatusCode.valueOf(200), "ETB_LENDING");
-                var data = Data.builder().object(rsmeMsgResponseWrapper.getMsg().getMsgBody()).build();
-                var body = Body.builder().data(data).build();
+					//Getting info from GCIF (phoneNumber,email)
+					var customerInformationResponseGcif = getCustomerInformationGcif(exisCustIndInquiryResponseWrapper);
 
-                response = Response.builder().body(body).header(header).build();
-            }
-            var header = new Header("", 123, HttpStatusCode.valueOf(200), "ETB");
-            var data = Data.builder().object("").build();
-            var body = Body.builder().data(data).build();
+					if (customerInformationResponseGcif != null
+							&& customerInformationResponseGcif.getCustomerInformationResponse().getResponseCode()
+							.equals("00")) {
 
-            response = Response.builder().body(body).header(header).build();
+						saveToDb(entryPointRequestDTO, customerInformationResponseCif, ETB_LENDING_TYPE);
 
-        }
-        var header = new Header("", 123, HttpStatusCode.valueOf(200), "NTB");
-        var data = Data.builder().object("").build();
-        var body = Body.builder().data(data).build();
+						var entryPointResponse = getEntryPointResponseDTOEtbLending(rsmeMsgResponseWrapper,
+								customerInformationResponseCif, customerInformationResponseGcif);
 
-        response = Response.builder().body(body).header(header).build();
+						return BaseResponse.response(HttpStatus.OK, "Success register for ETB Lending",
+								entryPointResponse);
+					}
+				}
+				return BaseResponse.response(HttpStatus.NOT_ACCEPTABLE, "Error", null);
+			}
 
+			//For ETB Type
+			//Getting info from GCIF (phoneNumber,email)
+			var customerInformationResponseGCif = getCustomerInformationCif(exisCustIndInquiryResponseWrapper);
 
-        return response;
-    }
+			if (customerInformationResponseGCif != null
+					&& customerInformationResponseGCif.getCustomerInformationResponse().getResponseCode()
+					.equals("00")) {
 
-    private static boolean checkIfEtbOrEtbLending(ExisCustIndInquiryResponseWrapper exisCustIndInquiryResponseWrapper) {
-        return exisCustIndInquiryResponseWrapper != null
-                && exisCustIndInquiryResponseWrapper.getExistingCustomerIndividualInquiryResponse().getExistingCustomer().equalsIgnoreCase("true")
-                && exisCustIndInquiryResponseWrapper.getExistingCustomerIndividualInquiryResponse().getResponseCode().equals("00");
-    }
+				//Getting info from Systematic CIF (maritalStatus)
+				var customerInformationResponseCif = getCustomerInformationCif(exisCustIndInquiryResponseWrapper);
 
-    private static boolean checkIfRsmeExists(MsgResponseWrapper rsmeMsgResponseWrapper) {
-        return rsmeMsgResponseWrapper != null
-                && rsmeMsgResponseWrapper.getMsg() != null
-                && rsmeMsgResponseWrapper.getMsg().getMsgHeader() != null
-                && rsmeMsgResponseWrapper.getMsg().getMsgHeader().getStatusCode().equals("0");
-    }
+				if (customerInformationResponseCif != null
+						&& customerInformationResponseCif.getCustomerInformationResponse().getResponseCode()
+						.equals("00")) {
+
+					//Save to DB for ETB
+					saveToDb(entryPointRequestDTO, customerInformationResponseCif, ETB_TYPE);
+
+					return BaseResponse.response(HttpStatus.OK, "Register success for ETB type",
+							EntryPointResponseDTO.builder()
+									.email(customerInformationResponseGCif.getCustomerInformationResponse()
+											.getCustomerInformationResponseData().getEmail()).phoneNumber(
+											customerInformationResponseGCif.getCustomerInformationResponse()
+													.getCustomerInformationResponseData().getMobileNo()).maritalStatus(
+											customerInformationResponseCif.getCustomerInformationResponse()
+													.getCustomerInformationResponseData().getMarital_status()).build());
+				}
+			}
+
+		}
+
+		//Save to DB for NTB
+		var individualIdentity = new IndividualIdentity();
+		individualIdentity.setNik(Long.parseLong(entryPointRequestDTO.Nik()));
+		individualIdentity.setName(entryPointRequestDTO.name());
+		individualIdentity.setDateOfBirth(entryPointRequestDTO.dob());
+		individualIdentity.setCategory(NTB_TYPE);
+		individualIdentity.setCreatedDate(LocalDateTime.now());
+		individualIdentity.setUpdatedDate(LocalDateTime.now());
+
+		individualRepository.save(individualIdentity);
+		//Give the response for NTB
+		return BaseResponse.response(HttpStatus.OK, "Register success for NTB type", entryPointRequestDTO);
+	}
+
+	private void saveToDb(EntryPointRequestDTO entryPointRequestDTO,
+			CustomerInformationResponseWrapper customerInformationResponseCif, String type) {
+		//Save to DB for ETB Lending
+		var individualIdentity = new IndividualIdentity();
+		individualIdentity.setNik(Long.parseLong(entryPointRequestDTO.Nik()));
+		individualIdentity.setEmail(
+				customerInformationResponseCif.getCustomerInformationResponse().getCustomerInformationResponseData()
+						.getEmail());
+		individualIdentity.setName(entryPointRequestDTO.name());
+		individualIdentity.setDateOfBirth(entryPointRequestDTO.dob());
+		individualIdentity.setCategory(type);
+		individualIdentity.setCreatedDate(LocalDateTime.now());
+		individualIdentity.setUpdatedDate(LocalDateTime.now());
+
+		individualRepository.save(individualIdentity);
+	}
+
+	private static EntryPointResponseDTO getEntryPointResponseDTOEtbLending(MsgResponseWrapper rsmeMsgResponseWrapper,
+			CustomerInformationResponseWrapper customerInformationResponseCif,
+			CustomerInformationResponseWrapper customerInformationResponseGcif) {
+		//construct response
+		return EntryPointResponseDTO.builder().email(customerInformationResponseCif.getCustomerInformationResponse()
+				.getCustomerInformationResponseData().getEmail()).companyName(
+				rsmeMsgResponseWrapper.getMsg().getMsgBody().getStatus().stream()
+						.map(companyName -> companyName.getCompanyName()).toList()).bussinessCategory(
+				rsmeMsgResponseWrapper.getMsg().getMsgBody().getStatus().stream()
+						.map(businessCategory -> businessCategory.getBusinessCategory()).toList()).lengthOfBusiness(
+				rsmeMsgResponseWrapper.getMsg().getMsgBody().getStatus().stream()
+						.map(lengthOfBusiness -> lengthOfBusiness.getLengthOfBusiness()).toList()).phoneNumber(
+				customerInformationResponseCif.getCustomerInformationResponse().getCustomerInformationResponseData()
+						.getMobileNo()).maritalStatus(
+				customerInformationResponseGcif.getCustomerInformationResponse().getCustomerInformationResponseData()
+						.getMarital_status()).build();
+	}
+
+	// CustomerInformation (GCIF)
+	private CustomerInformationResponseWrapper getCustomerInformationGcif(
+			ExisCustIndInquiryResponseWrapper exisCustIndInquiryResponseWrapper) {
+		//Customer Information
+		var customerInformation = CustomerInformationRequest.builder()
+				.GCIFNo(exisCustIndInquiryResponseWrapper.getExistingCustomerIndividualInquiryResponse()
+						.getCustomerData().getGcifNo()).build();
+
+		return customerInformationService.customerInformationResponseWrapper(customerInformation);
+	}
+
+	//Systematic CustomerInformation(CIF)
+	private CustomerInformationResponseWrapper getCustomerInformationCif(
+			ExisCustIndInquiryResponseWrapper exisCustIndInquiryResponseWrapper) {
+		//Customer Information
+		var customerInformation = CustomerInformationRequest.builder()
+				.CIFNo(exisCustIndInquiryResponseWrapper.getExistingCustomerIndividualInquiryResponse()
+						.getCustomerData().getCifNo()).build();
+
+		return customerInformationService.customerInformationResponseWrapper(customerInformation);
+	}
+
+	private MsgResponseWrapper getRsmeMsgResponseWrapper(
+			ExisCustIndInquiryResponseWrapper exisCustIndInquiryResponseWrapper) {
+		//CustomerRsmeLending
+		var customerRsme = MsgBodyRequest.builder()
+				.GCIF(exisCustIndInquiryResponseWrapper.getExistingCustomerIndividualInquiryResponse().getCustomerData()
+						.getGcifNo()).build();
+
+		return existingRsmeCustomerService.msgResponseWrapper(customerRsme);
+	}
+
+	private ExisCustIndInquiryResponseWrapper getExisCustIndInquiryResponseWrapper(
+			EntryPointRequestDTO entryPointRequestDTO) {
+
+		var existCustIndInquiryReq = ExistingCustomerIndividualRequest.builder().name(entryPointRequestDTO.name())
+				.identityNo(entryPointRequestDTO.Nik())
+				.dateOfBirth(Util.dateToString(entryPointRequestDTO.dob(), DATE_OF_BIRTH_ESB_FORMAT)).build();
+
+		return existingCustomerIndividualInquiryService.exisCustIndInquiryResponseWrapper(existCustIndInquiryReq);
+	}
+
+	private static boolean checkIfEtbOrEtbLending(ExisCustIndInquiryResponseWrapper exisCustIndInquiryResponseWrapper) {
+		return exisCustIndInquiryResponseWrapper != null
+				&& exisCustIndInquiryResponseWrapper.getExistingCustomerIndividualInquiryResponse()
+				.getExistingCustomer().equalsIgnoreCase("true")
+				&& exisCustIndInquiryResponseWrapper.getExistingCustomerIndividualInquiryResponse().getResponseCode()
+				.equals("00");
+	}
+
+	private static boolean checkIfRsmeExists(MsgResponseWrapper rsmeMsgResponseWrapper) {
+		return rsmeMsgResponseWrapper != null && rsmeMsgResponseWrapper.getMsg() != null
+				&& rsmeMsgResponseWrapper.getMsg().getMsgHeader() != null && rsmeMsgResponseWrapper.getMsg()
+				.getMsgHeader().getStatusCode().equals("200") && rsmeMsgResponseWrapper.getMsg().getMsgHeader()
+				.getAdditionalStatusCodes().get(1).getHostStatusCode().equalsIgnoreCase("Berhasil");
+	}
 }
 

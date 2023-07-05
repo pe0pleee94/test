@@ -2,6 +2,8 @@ package id.co.maybank.digitallending.base.esb.header;
 
 import id.co.maybank.digitallending.util.Util;
 import id.co.maybank.esb.model.channelheader.ChannelHeader;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -11,6 +13,8 @@ import java.time.LocalDateTime;
  * @version 1.0
  * @since 1.0 (Created June. 22, 2023)
  */
+
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ChannelHeaderEsb {
 
 	//ChannelID for SME Digital Lending
