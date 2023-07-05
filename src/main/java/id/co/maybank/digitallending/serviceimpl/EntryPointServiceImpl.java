@@ -48,7 +48,7 @@ public class EntryPointServiceImpl implements EntryPointService {
 
 	private static final String ETB_TYPE = "ETB";
 
-	private static final String ETB_LENDING_TYPE = "ETB_LENDING";
+	private static final String ETB_LENDING_TYPE = "ETL";
 
 	Response response;
 
@@ -106,7 +106,7 @@ public class EntryPointServiceImpl implements EntryPointService {
 							&& customerInformationResponseGcif.getCustomerInformationResponse().getResponseCode()
 							.equals("00")) {
 
-						saveToDb(entryPointRequestDTO, customerInformationResponseCif, ETB_LENDING_TYPE);
+						saveToDb(entryPointRequestDTO, customerInformationResponseGcif, ETB_LENDING_TYPE);
 
 						var entryPointResponse = getEntryPointResponseDTOEtbLending(rsmeMsgResponseWrapper,
 								customerInformationResponseCif, customerInformationResponseGcif);
@@ -120,7 +120,7 @@ public class EntryPointServiceImpl implements EntryPointService {
 
 			//For ETB Type
 			//Getting info from GCIF (phoneNumber,email)
-			var customerInformationResponseGCif = getCustomerInformationCif(exisCustIndInquiryResponseWrapper);
+			var customerInformationResponseGCif = getCustomerInformationGcif(exisCustIndInquiryResponseWrapper);
 
 			if (customerInformationResponseGCif != null
 					&& customerInformationResponseGCif.getCustomerInformationResponse().getResponseCode()
@@ -134,7 +134,7 @@ public class EntryPointServiceImpl implements EntryPointService {
 						.equals("00")) {
 
 					//Save to DB for ETB
-					saveToDb(entryPointRequestDTO, customerInformationResponseCif, ETB_TYPE);
+					saveToDb(entryPointRequestDTO, customerInformationResponseGCif, ETB_TYPE);
 
 					return BaseResponse.response(HttpStatus.OK, "Register success for ETB type",
 							EntryPointResponseDTO.builder()
@@ -164,12 +164,12 @@ public class EntryPointServiceImpl implements EntryPointService {
 	}
 
 	private void saveToDb(EntryPointRequestDTO entryPointRequestDTO,
-			CustomerInformationResponseWrapper customerInformationResponseCif, String type) {
+			CustomerInformationResponseWrapper customerInformationResponse, String type) {
 		//Save to DB for ETB Lending
 		var individualIdentity = new IndividualIdentity();
 		individualIdentity.setNik(Long.parseLong(entryPointRequestDTO.Nik()));
 		individualIdentity.setEmail(
-				customerInformationResponseCif.getCustomerInformationResponse().getCustomerInformationResponseData()
+				customerInformationResponse.getCustomerInformationResponse().getCustomerInformationResponseData()
 						.getEmail());
 		individualIdentity.setName(entryPointRequestDTO.name());
 		individualIdentity.setDateOfBirth(entryPointRequestDTO.dob());
@@ -184,7 +184,7 @@ public class EntryPointServiceImpl implements EntryPointService {
 			CustomerInformationResponseWrapper customerInformationResponseCif,
 			CustomerInformationResponseWrapper customerInformationResponseGcif) {
 		//construct response
-		return EntryPointResponseDTO.builder().email(customerInformationResponseCif.getCustomerInformationResponse()
+		return EntryPointResponseDTO.builder().email(customerInformationResponseGcif.getCustomerInformationResponse()
 				.getCustomerInformationResponseData().getEmail()).companyName(
 				rsmeMsgResponseWrapper.getMsg().getMsgBody().getStatus().stream()
 						.map(companyName -> companyName.getCompanyName()).toList()).bussinessCategory(
@@ -192,9 +192,9 @@ public class EntryPointServiceImpl implements EntryPointService {
 						.map(businessCategory -> businessCategory.getBusinessCategory()).toList()).lengthOfBusiness(
 				rsmeMsgResponseWrapper.getMsg().getMsgBody().getStatus().stream()
 						.map(lengthOfBusiness -> lengthOfBusiness.getLengthOfBusiness()).toList()).phoneNumber(
-				customerInformationResponseCif.getCustomerInformationResponse().getCustomerInformationResponseData()
-						.getMobileNo()).maritalStatus(
 				customerInformationResponseGcif.getCustomerInformationResponse().getCustomerInformationResponseData()
+						.getMobileNo()).maritalStatus(
+				customerInformationResponseCif.getCustomerInformationResponse().getCustomerInformationResponseData()
 						.getMarital_status()).build();
 	}
 
@@ -251,8 +251,8 @@ public class EntryPointServiceImpl implements EntryPointService {
 	private static boolean checkIfRsmeExists(MsgResponseWrapper rsmeMsgResponseWrapper) {
 		return rsmeMsgResponseWrapper != null && rsmeMsgResponseWrapper.getMsg() != null
 				&& rsmeMsgResponseWrapper.getMsg().getMsgHeader() != null && rsmeMsgResponseWrapper.getMsg()
-				.getMsgHeader().getStatusCode().equals("200") && rsmeMsgResponseWrapper.getMsg().getMsgHeader()
-				.getAdditionalStatusCodes().get(1).getHostStatusCode().equalsIgnoreCase("Berhasil");
+				.getMsgHeader().getStatusCode().equals("0") && rsmeMsgResponseWrapper.getMsg().getMsgHeader()
+				.getStatusDesc().equals("Successfully");
 	}
 }
 

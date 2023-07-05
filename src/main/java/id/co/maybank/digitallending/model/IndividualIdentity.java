@@ -7,7 +7,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.*;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.time.LocalDate;
 
@@ -48,7 +48,6 @@ public class IndividualIdentity extends BaseModel implements Serializable {
 	@NotNull
 	private LocalDate dateOfBirth;
 
-	@NotNull
 	@Column(length = 100)
 	private String email;
 

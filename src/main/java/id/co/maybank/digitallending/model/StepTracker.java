@@ -2,9 +2,9 @@ package id.co.maybank.digitallending.model;
 
 import id.co.maybank.digitallending.base.BaseModel;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
-import javax.validation.constraints.NotNull;
 import java.io.Serial;
 import java.io.Serializable;
 
